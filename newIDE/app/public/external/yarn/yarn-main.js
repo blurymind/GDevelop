@@ -42,16 +42,18 @@ ipcRenderer.on('yarn-open', (event, receivedData) => {
     initialResourcePath: receivedData.resourcePath,
     extension: '.json',
   });
-  
+
   // Inject custom Apply button.
   const saveToGdButton = yarn.document
-    .getElementsByClassName('menu')[0]
+    .getElementsByClassName('search-tags')[0]
     .cloneNode(true);
   saveToGdButton.onclick = () => saveAndClose(pathEditorHeader);
   yarn.document
-    .getElementsByClassName('app-menu')[0]
-    .appendChild(saveToGdButton);
-  saveToGdButton.childNodes[0].firstChild.data = 'Apply';
+    .getElementsByClassName('search-tags')[0]
+    .parentElement.appendChild(saveToGdButton);
+  saveToGdButton.childNodes[2].innerHTML = 'Apply';
+  yarn.document.getElementsByClassName('app-search')[0].style = 'right: 45px';
+  saveToGdButton.style = 'padding-left: 30px';
 
   // Process the json file to open, if any.
   if (fileExists(receivedData.resourcePath)) {
