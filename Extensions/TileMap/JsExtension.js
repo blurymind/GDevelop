@@ -81,10 +81,10 @@ module.exports = {
         'tilemapJsonFile',
         new gd.PropertyDescriptor(objectContent.tilemapJsonFile)
           .setType('resource')
-          .addExtraInfo('json')
-          .setLabel(_('Tilemap JSON file'))
+          .addExtraInfo('tilemap')//
+          .setLabel(_('Tilemap tiled JSON or Ldtk file'))
           .setDescription(
-            _('This is the JSON file that was saved or exported from Tiled.')
+            _('This is the JSON/Ldtk file that was saved or exported from Tiled/Ldtk.')
           )
       );
       objectProperties.set(
@@ -180,7 +180,7 @@ module.exports = {
         'TileMap',
         _('Tilemap'),
         _(
-          'Displays a tiled-based map, made with the Tiled editor (download it separately on https://www.mapeditor.org/).'
+          'Displays a tiled-based map, made with the Tiled/Ldtk editor (download it separately on https://www.mapeditor.org/ or https://ldtk.io/).'
         ),
         'JsPlatform/Extensions/tile_map32.png',
         objectTileMap
@@ -206,7 +206,7 @@ module.exports = {
         'JsPlatform/Extensions/tile_map32.png'
       )
       .addParameter('object', 'TileMap', 'TileMap', false)
-      .addParameter('jsonResource', _('Tilemap JSON file'), '', false)
+      .addParameter('tilemapResource', _('Tilemap JSON/Ldtk file'), '', false)
       .getCodeExtraInformation()
       .setFunctionName('isTilemapJsonFile');
 
@@ -223,7 +223,7 @@ module.exports = {
         'JsPlatform/Extensions/tile_map32.png'
       )
       .addParameter('object', 'TileMap', 'TileMap', false)
-      .addParameter('jsonResource', _('Tilemap JSON file'), '', false)
+      .addParameter('tilemapResource', _('Tilemap JSON file'), '', false)
       .getCodeExtraInformation()
       .setFunctionName('setTilemapJsonFile');
 
@@ -238,7 +238,7 @@ module.exports = {
         'JsPlatform/Extensions/tile_map32.png'
       )
       .addParameter('object', 'TileMap', 'TileMap', false)
-      .addParameter('jsonResource', _('Tileset JSON file'), '', false)
+      .addParameter('tilemapResource', _('Tileset JSON file'), '', false)
       .getCodeExtraInformation()
       .setFunctionName('isTilesetJsonFile');
 
@@ -255,7 +255,7 @@ module.exports = {
         'JsPlatform/Extensions/tile_map32.png'
       )
       .addParameter('object', 'TileMap', 'TileMap', false)
-      .addParameter('jsonResource', _('Tileset JSON file'), '', false)
+      .addParameter('tilemapResource', _('Tileset JSON file'), '', false)
       .getCodeExtraInformation()
       .setFunctionName('setTilesetJsonFile');
 
@@ -619,6 +619,7 @@ module.exports = {
         .get('tilesetJsonFile')
         .getValue();
 
+      console.log("json file", tilemapJsonFile)
       try {
         const tileMapJsonData = await this._pixiResourcesLoader.getResourceJsonData(
           this._project,
