@@ -337,6 +337,7 @@
     genericTileMapData,
     displayMode,
     layerIndex,
+    levelIndex ,
     pako
   ) => {
     if (!pixiTileMap || !genericTileMapData) return;

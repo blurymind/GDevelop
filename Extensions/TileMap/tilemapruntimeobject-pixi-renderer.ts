@@ -69,6 +69,7 @@ namespace gdjs {
           pixiTileMapData,
           this._object._displayMode,
           this._object._layerIndex,
+          this._object._levelIndex,
           // @ts-ignore - TODO: Add typings for pako.
           pako
         );
