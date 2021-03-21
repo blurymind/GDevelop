@@ -62,6 +62,10 @@ module.exports = {
         objectContent.layerIndex = parseFloat(newValue);
         return true;
       }
+      if (propertyName === 'levelIndex') {
+        objectContent.levelIndex = parseFloat(newValue);
+        return true;
+      }
       if (propertyName === 'animationSpeedScale') {
         objectContent.animationSpeedScale = parseFloat(newValue);
         return true;
@@ -127,6 +131,17 @@ module.exports = {
           )
       );
       objectProperties.set(
+          'levelIndex',
+          new gd.PropertyDescriptor(objectContent.levelIndex.toString())
+              .setType('number')
+              .setLabel(_('Level index to display'))
+              .setDescription(
+                  _(
+                      'Select which level to render via its index (Ldtk)'
+                  )
+              )
+      );
+      objectProperties.set(
         'animationSpeedScale',
         new gd.PropertyDescriptor(objectContent.animationSpeedScale.toString())
           .setType('number')
@@ -148,6 +163,7 @@ module.exports = {
         tilemapAtlasImage: '',
         displayMode: 'visible',
         layerIndex: 0,
+        levelIndex: 0,
         animationSpeedScale: 1,
         animationFps: 4,
       })
@@ -341,6 +357,49 @@ module.exports = {
       .addParameter('object', 'TileMap', 'TileMap', false)
       .getCodeExtraInformation()
       .setFunctionName('getLayerIndex');
+
+    object
+        .addCondition(
+            'LevelIndex',
+            _('Level index (ldtk)'),
+            _('Compare the value of the level index.'),
+            _('the level index'),
+            '',
+            'JsPlatform/Extensions/tile_map24.png',
+            'JsPlatform/Extensions/tile_map32.png'
+        )
+        .addParameter('object', 'TileMap', 'TileMap', false)
+        .useStandardRelationalOperatorParameters('number')
+        .getCodeExtraInformation()
+        .setFunctionName('getLevelIndex');
+
+    object
+        .addAction(
+            'SetLevelIndex',
+            _('Level index'),
+            _('Set the level index of the Tilemap.'),
+            _('the level index'),
+            '',
+            'JsPlatform/Extensions/tile_map24.png',
+            'JsPlatform/Extensions/tile_map32.png'
+        )
+        .addParameter('object', 'TileMap', 'TileMap', false)
+        .useStandardOperatorParameters('number')
+        .getCodeExtraInformation()
+        .setFunctionName('setLevelIndex')
+        .setGetter('getLevelIndex');
+
+    object
+        .addExpression(
+            'LevelIndex',
+            _('Level index'),
+            _('Get the level index being displayed'),
+            '',
+            'JsPlatform/Extensions/tile_map32.png'
+        )
+        .addParameter('object', 'TileMap', 'TileMap', false)
+        .getCodeExtraInformation()
+        .setFunctionName('getLevelndex');
 
     object
       .addCondition(
@@ -577,6 +636,13 @@ module.exports = {
           .getValue(),
         10
       );
+      const levelIndex = parseInt(
+          this._associatedObject
+              .getProperties(this.project)
+              .get('levelIndex')
+              .getValue(),
+          0
+      );
       const displayMode = this._associatedObject
         .getProperties(this.project)
         .get('displayMode')
@@ -603,6 +669,7 @@ module.exports = {
           pixiTileMapData,
           displayMode,
           layerIndex,
+            levelIndex,
           pako
         );
       }
