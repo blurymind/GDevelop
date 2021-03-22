@@ -79,13 +79,6 @@
    * @returns {?GenericPixiTileMapData}
    */
   const parseTiledData = (tiledData, atlasTexture, getTexture) => {
-    if (!tiledData.tiledversion) {
-      console.warn(
-        "The loaded Tiled map does not contain a 'tiledversion' key. Are you sure this file has been exported from Tiled (mapeditor.org)?"
-      );
-
-      return null;
-    }
 
     // We only handle tileset embedded in the tilemap. Warn if it's not the case.
     if (!tiledData.tilesets.length || 'source' in tiledData.tilesets[0]) {
@@ -167,6 +160,130 @@
       tiles: tiles,
     };
     return tileMapData;
+  };
+
+  /**
+   * Parse a Tiled map Ldtk file,
+   * exported from Tiled (https://www.mapeditor.org/)
+   * into a generic tile map data (`GenericPixiTileMapData`).
+   *
+   * @param {Object} tiledData A JS object representing a map exported from Tiled.
+   * @param {?PIXI.BaseTexture} atlasTexture
+   * @param {(textureName: string) => PIXI.BaseTexture} getTexture A getter to load a texture. Used if atlasTexture is not specified.
+   * @returns {?GenericPixiTileMapData}
+   */
+  const parseLDtkData = (tiledData, atlasTexture, getTexture) => {
+    console.log(tiledData,atlasTexture,getTexture)
+    return null;
+    /** @type {GenericPixiTileMapData} */
+    // const tileMapData = {
+      // width: atlasTexture.width,
+      // height: atlasTexture.height,
+      // tileWidth: tilewidth,
+      // tileHeight: tileheight,
+      // atlasTexture: atlasTexture,
+      // textureCache: textureCache,
+      // layers: tiledData.layers,
+      // tiles: tiles,
+    // };
+    // return tileMapData;
+    ////////////////////////////////////////////////
+    //
+    // const {
+    //   tilewidth,
+    //   tileheight,
+    //   tilecount,
+    //   tiles,
+    //   image,
+    //   columns,
+    //   spacing,
+    //   margin,
+    // } = tiledData.tilesets[0];
+    // if (!atlasTexture) atlasTexture = getTexture(image);
+    //
+    // // We try to detect what size Tiled is expecting.
+    // const rows = tilecount / columns;
+    // const expectedAtlasWidth =
+    //     tilewidth * columns + spacing * (columns - 1) + margin * 2;
+    // const expectedAtlasHeight =
+    //     tileheight * rows + spacing * (rows - 1) + margin * 2;
+    // if (
+    //     (atlasTexture.width !== 1 && expectedAtlasWidth !== atlasTexture.width) ||
+    //     (atlasTexture.height !== 1 && expectedAtlasHeight !== atlasTexture.height)
+    // ) {
+    //   const expectedSize = expectedAtlasWidth + 'x' + expectedAtlasHeight;
+    //   const actualSize = atlasTexture.width + 'x' + atlasTexture.height;
+    //   console.warn(
+    //       'It seems the atlas file was resized, which is not supported. It should be ' +
+    //       expectedSize +
+    //       "px, but it's " +
+    //       actualSize +
+    //       ' px.'
+    //   );
+    //   return null;
+    // }
+    //
+    // // Prepare the textures pointing to the base "Atlas" Texture for each tile.
+    // // Note that this cache can be augmented later with rotated/flipped
+    // // versions of the tile textures.
+    // /** @type {Object<number, PIXI.Texture | null>} */
+    // const textureCache = {};
+    // for (let frame = 0; frame <= tilecount; frame++) {
+    //   const columnMultiplier = Math.floor((frame - 1) % columns);
+    //   const rowMultiplier = Math.floor((frame - 1) / columns);
+    //   const x = margin + columnMultiplier * (tilewidth + spacing);
+    //   const y = margin + rowMultiplier * (tileheight + spacing);
+    //
+    //   try {
+    //     const rect = new PIXI.Rectangle(x, y, tilewidth, tileheight);
+    //     // @ts-ignore - atlasTexture is never null here.
+    //     const texture = new PIXI.Texture(atlasTexture, rect);
+    //
+    //     textureCache[frame] = texture;
+    //   } catch (error) {
+    //     console.error(
+    //         'An error occurred while creating a PIXI.Texture to be used in a TileMap:',
+    //         error
+    //     );
+    //     textureCache[frame] = null;
+    //   }
+    // }
+    //
+    // /** @type {GenericPixiTileMapData} */
+    // const tileMapData = {
+    //   width: atlasTexture.width,
+    //   height: atlasTexture.height,
+    //   tileWidth: tilewidth,
+    //   tileHeight: tileheight,
+    //   atlasTexture: atlasTexture,
+    //   textureCache: textureCache,
+    //   layers: tiledData.layers,
+    //   tiles: tiles,
+    // };
+    // return tileMapData;
+  };
+
+  /**
+   * Detects if the file was created in tiled or ldtk and creates a GenericPixiTileMapData with the appropriate method
+   * @param tiledData
+   * @param atlasTexture
+   * @param getTexture
+   * @returns {?GenericPixiTileMapData}
+   */
+  const parseTilemapData = (tiledData, atlasTexture, getTexture) => {
+    if (tiledData.tiledversion) {
+      console.info('Detected the json file was created in Tiled, parsing the data...');
+      return parseTiledData(tiledData, atlasTexture, getTexture)
+    }
+    if (tiledData['__header__'] && tiledData['__header__'].app === 'LDtk'){
+      console.info('Detected the json/ldtk file was created in LDtk, parsing the data...');
+      return null;// TODO call the LDtk parser here
+    }
+
+    console.warn(
+        "The loaded Tiled map data does not contain a 'tiledversion' or '__header__' key. Are you sure this file has been exported from Tiled (mapeditor.org) or LDtk (ldtk.io)?"
+    );
+    return null;
   };
 
   /**
@@ -456,7 +573,7 @@
     const atlasTexture = atlasImageResourceName
       ? getTexture(atlasImageResourceName)
       : null;
-    const genericPixiTileMapData = parseTiledData(
+    const genericPixiTileMapData = parseTilemapData(
       tiledData,
       atlasTexture,
       getTexture
