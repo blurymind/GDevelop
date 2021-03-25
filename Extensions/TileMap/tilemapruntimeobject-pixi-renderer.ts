@@ -60,7 +60,8 @@ namespace gdjs {
           : tileMapJsonData,
         this._object._tilemapAtlasImage,
         this._object._tilemapJsonFile,
-        this._object._tilesetJsonFile
+        this._object._tilesetJsonFile,
+        this._object._levelIndex
       );
       if (pixiTileMapData) {
         // @ts-ignore - TODO: Add typings for pixi-tilemap-helper.
@@ -69,7 +70,6 @@ namespace gdjs {
           pixiTileMapData,
           this._object._displayMode,
           this._object._layerIndex,
-          this._object._levelIndex,
           // @ts-ignore - TODO: Add typings for pako.
           pako
         );
