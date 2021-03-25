@@ -653,14 +653,17 @@ module.exports = {
         .getValue();
 
       const pixiTileMapData = PixiTilemapHelper.loadPixiTileMapData(
-        (textureName) =>
-          this._pixiResourcesLoader.getPIXITexture(this._project, textureName),
+        (textureName, relativeToPath) => {
+          if(relativeToPath) return this._pixiResourcesLoader.getPixiTextureRelativeToFile(this._project, textureName, relativeToPath)
+          return this._pixiResourcesLoader.getPIXITexture(this._project, textureName)
+        },
         tilesetJsonData
           ? { ...tileMapJsonData, tilesets: [tilesetJsonData] }
           : tileMapJsonData,
         tilemapAtlasImage,
         tilemapJsonFile,
-        tilesetJsonFile
+        tilesetJsonFile,
+        levelIndex
       );
 
       if (pixiTileMapData) {
@@ -669,7 +672,6 @@ module.exports = {
           pixiTileMapData,
           displayMode,
           layerIndex,
-            levelIndex,
           pako
         );
       }
