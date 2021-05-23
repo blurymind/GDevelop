@@ -168,39 +168,84 @@
    * @returns {?GenericPixiTileMapData}
    */
   const parseLDtkData = (tiledData, atlasTexture, getTexture, levelIndex, tilemapResourceName) => {
+    const tileSetAtlases = {};
+    tiledData.defs.tilesets.forEach(tileset=> {
+      console.log("tileset",tileset)
+      const texture = tileset.relPath ? getTexture(tileset.relPath , tilemapResourceName): null;
+      tileSetAtlases[tileset.uid] = { texture, ...tileset }
+    })
+
+    console.log("TILESETS", tileSetAtlases)
     const selectedLevel = tiledData.levels[levelIndex];
     console.log(tiledData,atlasTexture,getTexture, "level",levelIndex, selectedLevel)
 
     const layers = [];
     const textureCache = [];
-    selectedLevel.layerInstances.forEach( (ldtkLayer, layerIndex) => {
+    selectedLevel.layerInstances.reverse().forEach((ldtkLayer, layerIndex) => {
       // TODO - will need to somehow auto add these resources via resourcesManager and load them up for parsing, sight
       const layerAtlasTextureRelPath = ldtkLayer['__tilesetRelPath'];
       const gridSize = ldtkLayer['__gridSize'];
+      const type = ldtkLayer['__type'];
+      const tilesetUid = ldtkLayer['__tilesetDefUid'];
       const generatedTiles = ldtkLayer.autoLayerTiles;
-      const layer = { type: "autoLayer", autoLayerTiles: ldtkLayer.autoLayerTiles, visible: true}
-      const layerAtlasTexture = layerAtlasTextureRelPath? getTexture(layerAtlasTextureRelPath, tilemapResourceName): null;
+      const entities = ldtkLayer.entityInstances || [];
+      const layer = {
+        type: type,
+        autoLayerTiles: generatedTiles,
+        entityInstances: entities,
+        visible: ldtkLayer.visible,
+        opcity: ldtkLayer['__opacity']
+      }
 
-      console.log("TEXTURE got:",layerAtlasTexture, layerAtlasTextureRelPath);
+
+      console.log("LAYER::", ldtkLayer)
+      console.log("TEXTURE got:", layerAtlasTextureRelPath);
 
       //generatedTiles have px[x,y] to place them and src[x,y] to detect uid. Src will need to become a uid?
       //pass both to renderer's generic data, just in case
       //ldtkLayer['__type'] === 'AutoLayer'
-      if(ldtkLayer['__type'] === 'IntGrid'){
-        console.log("IntGrid layer ", ldtkLayer, layerAtlasTextureRelPath, generatedTiles)
-      }
 
+      console.log("IntGrid layer ", ldtkLayer, layerAtlasTextureRelPath, generatedTiles)
       console.log("autolayer ", ldtkLayer,layerAtlasTextureRelPath,generatedTiles)
       textureCache[layerIndex] = {};
+
+      // if (type === 'Entities'){
+      //   entities.forEach(entityInstance =>{
+      //     try {
+      //
+      //       console.log("ENT", entityInstance)
+      //       const tile = entityInstance['__tile']
+      //       const textureAtlas = tileSetAtlases[tile.tilesetUid]
+      //       const [x,y] = tile.srcRect;
+      //       const rect = new PIXI.Rectangle(x, y, gridSize, gridSize);
+      //       console.log("Entity rect>>", rect,tile,tile.tilesetUid, textureAtlas, tileSetAtlases)
+      //       // @ts-ignore - atlasTexture is never null here.
+      //       // const texture = new PIXI.Texture(textureAtlas, rect);
+      //
+      //
+      //       textureCache[layerIndex][tile.tilesetUid] = new PIXI.Texture(textureAtlas, rect);
+      //       console.log("entity texture",textureCache[layerIndex][tile.tilesetUid] ,layerIndex, tile.tilesetUid)
+      //     }catch(error){
+      //       console.error('Failed entity tile',error)
+      //     }
+      //   })
+      // } else{
+
+      // }
+      const tileSet = tileSetAtlases[tilesetUid];
+      console.log("Tileset to use",tileSet )
+
       generatedTiles.forEach(generatedTile => {
         if (generatedTile.t in textureCache[layerIndex]) return;
+
         try {
           const [x,y] = generatedTile.src;
           //tileWidth,tileHeight
           // console.log("RECT",x,y,generatedTile,ldtkLayer['__gridSize'])
           const rect = new PIXI.Rectangle(x, y, gridSize, gridSize);
+          console.log("RECT", rect)
           // @ts-ignore - atlasTexture is never null here.
-          const texture = new PIXI.Texture(layerAtlasTexture, rect);
+          const texture = new PIXI.Texture(tileSet.texture, rect);
 
           textureCache[layerIndex][generatedTile.t] = texture;
         } catch (error) {
@@ -211,6 +256,9 @@
           textureCache[layerIndex] = null;
         }
       })
+
+
+
 
       layers.push(layer)
     })
@@ -520,9 +568,10 @@
 
 
       // Ldtk Types
-      if (layer.type === 'autoLayer') {
+      if (layer.type === 'AutoLayer' || layer.type === 'IntGrid') {
+        console.log("Render autolayer", layer)
         layer.autoLayerTiles.forEach(function (tile){
-          console.log("render autotile >>>>>>", tile)
+          // console.log("render autotile >>>>>>", tile)
           const [x,y] = tile.px;
           pixiTileMap.addFrame(
               genericTileMapData.textureCache[index][tile.t],
@@ -530,6 +579,18 @@
               y
           );
         })
+        // layer.entityInstances.forEach(function(entityInstance){
+        //   const tile = entityInstance['__tile']
+        //   if (!tile)return
+        //
+        //   const [x,y] = entityInstance.px;
+        //   console.log("render entity", entityInstance, x,y, tile.tilesetUid, genericTileMapData.textureCache[index][tile.tilesetUid])
+        //   pixiTileMap.addFrame(
+        //       genericTileMapData.textureCache[index][tile.tilesetUid],
+        //       x,
+        //       y
+        //   );
+        // })
       }
 
       // Tiled types
