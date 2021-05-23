@@ -199,7 +199,7 @@
         autoLayerTiles: generatedTiles,
         entityInstances: entities,
         visible: ldtkLayer.visible,
-        opcity: ldtkLayer['__opacity']
+        opacity: ldtkLayer['__opacity']
       }
 
 
@@ -574,15 +574,21 @@
 
       // Ldtk Types
       if (layer.type === 'AutoLayer' || layer.type === 'IntGrid') {
-        console.log("Render autolayer", layer)
+
+        // @ts-ignore
         layer.autoLayerTiles.forEach(function (tile){
           // console.log("render autotile >>>>>>", tile)
-          const [x,y] = tile.px;
-          pixiTileMap.addFrame(
-              genericTileMapData.textureCache[index][tile.t],
-              x,
-              y
-          );
+          var texture = genericTileMapData.textureCache[index];
+          if (texture){
+            const [x,y] = tile.px;
+            pixiTileMap.tile(
+                // @ts-ignore
+                texture[tile.t] || "shit.png",
+                x,
+                y
+            )
+          }
+
         })
         // layer.entityInstances.forEach(function(entityInstance){
         //   const tile = entityInstance['__tile']
@@ -604,11 +610,11 @@
           const { gid, x, y, visible } = object;
           if (displayMode === 'visible' && !visible) return;
           if (genericTileMapData.textureCache[gid]) {
-            pixiTileMap.addFrame(
-              genericTileMapData.textureCache[gid],
-              x,
-              y - genericTileMapData.tileHeight
-            );
+            // pixiTileMap.addFrame(
+            //   genericTileMapData.textureCache[gid],
+            //   x,
+            //   y - genericTileMapData.tileHeight
+            // );
           }
         });
       } else if (layer.type === 'tilelayer') {
@@ -648,20 +654,20 @@
                   return tile.id === tileUid - 1;
                 });
 
-              const pixiTilemapFrame = pixiTileMap.addFrame(
-                tileTexture,
-                xPos,
-                yPos
-              );
+              // const pixiTilemapFrame = pixiTileMap.addFrame(
+              //   tileTexture,
+              //   xPos,
+              //   yPos
+              // );
 
               // Animated tiles have a limitation:
               // they are only able to use frames arranged horizontally one next
               // to each other on the atlas.
               if (tileData && tileData.animation) {
-                pixiTilemapFrame.tileAnimX(
-                  genericTileMapData.tileWidth,
-                  tileData.animation.length
-                );
+                // pixiTilemapFrame.tileAnimX(
+                //   genericTileMapData.tileWidth,
+                //   tileData.animation.length
+                // );
               }
             }
 
