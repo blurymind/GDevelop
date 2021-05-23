@@ -227,25 +227,4 @@ export default [
       }
     },
   },
-  {
-    name: 'publicTilemapUrlChooser',
-    displayName: 'Choose a tilemap file from library',
-    kind: 'tilemap',
-    component: class JsonResourceChooser extends React.Component {
-      chooseResources = () => {
-        if (this._chooser) return this._chooser.chooseResources();
-      };
-      render() {
-        return (
-            <GenericResourcesChooser
-                {...this.props}
-                resourceKind="tilemap"
-                createNewResource={() => new gd.TilemapResource()}
-                title={<Trans>Choose a Tilemap File from the library</Trans>}
-                ref={chooser => (this._chooser = chooser)}
-            />
-        );
-      }
-    },
-  },
 ];
